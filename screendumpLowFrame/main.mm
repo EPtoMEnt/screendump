@@ -1,7 +1,6 @@
 #include <errno.h>
 #include <substrate.h>
 #include <rfb/rfb.h>
-#import <xpc/xpc.h>
 
 #define kSettingsPath @"/var/mobile/Library/Preferences/com.cosmosgenius.screendump.plist"
 
