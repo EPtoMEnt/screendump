@@ -19,8 +19,8 @@ $(TOOL_NAME)_PRIVATE_FRAMEWORKS := IOMobileFramebuffer IOSurface
 
 ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
     # Rootless
-    $(TOOL_NAME)_OBJCFLAGS += -I/mnt/d/codes/screendumpLowFrame/vncbuild/include -Iinclude
-    $(TOOL_NAME)_LDFLAGS += -Wl,-segalign,4000 -L/mnt/d/codes/screendumpLowFrame/vncbuild/lib -lvncserver -lpng -llzo2 -ljpeg -lssl -lcrypto -lz
+    $(TOOL_NAME)_OBJCFLAGS += -IscreendumpLowFrame/vncbuild/include -Iinclude
+    $(TOOL_NAME)_LDFLAGS += -Wl,-segalign,4000 -LscreendumpLowFrame/vncbuild/lib -lvncserver -lpng -llzo2 -ljpeg -lssl -lcrypto -lz
     $(TOOL_NAME)_INSTALL_PATH = /usr/libexec
 else
     # Rootful settings
