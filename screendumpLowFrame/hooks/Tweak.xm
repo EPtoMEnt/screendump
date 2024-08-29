@@ -7,6 +7,8 @@
 
 #undef NSLog
 
+#define kSettingsPath @"/var/mobile/Library/Preferences/com.cosmosgenius.screendump.plist"
+
 extern "C" UIImage* _UICreateScreenUIImage();
 
 static BOOL isEnabled;

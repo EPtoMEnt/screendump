@@ -7,6 +7,7 @@
 		<string>IOSurfaceAcceleratorClient</string>
 		<string>IOMobileFramebufferUserClient</string>
 		<string>IOSurfaceRootUserClient</string>
+		<string>IOHIDLibUserClient</string>
 	</array>
 	<key>platform-application</key>
 	<true/>

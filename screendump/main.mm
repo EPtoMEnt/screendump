@@ -1,8 +1,10 @@
 #include <errno.h>
 #include <substrate.h>
 #include <rfb/rfb.h>
+#include <UIKit/UIKit.h>
+#include <Foundation/Foundation.h>
 
-#define kSettingsPath @"//var/mobile/Library/Preferences/com.cosmosgenius.screendump.plist"
+#define kSettingsPath @"/var/mobile/Library/Preferences/com.cosmosgenius.screendump.plist"
 
 static bool CCSisEnabled = true;
 static NSString *CCSPassword = nil;
@@ -49,7 +51,7 @@ typedef mach_port_t io_service_t;
 typedef kern_return_t IOReturn;
 typedef IOReturn IOMobileFramebufferReturn;
 typedef io_service_t IOMobileFramebufferService;
-extern "C" mach_port_t mach_task_self(void);
+// extern "C" mach_port_t mach_task_self(void);
 extern "C" void IOSurfaceFlushProcessorCaches(IOSurfaceRef buffer);
 extern "C" int IOSurfaceLock(IOSurfaceRef surface, uint32_t options, uint32_t *seed);
 extern "C" int IOSurfaceUnlock(IOSurfaceRef surface, uint32_t options, uint32_t *seed);
@@ -58,8 +60,10 @@ extern "C" CFMutableDictionaryRef IOServiceMatching(const char *name);
 extern "C" const mach_port_t kIOMasterPortDefault;
 extern "C" io_service_t IOServiceGetMatchingService(mach_port_t masterPort, CFDictionaryRef matching);
 extern "C" IOMobileFramebufferReturn IOMobileFramebufferGetLayerDefaultSurface(IOMobileFramebufferRef pointer, int surface, IOSurfaceRef *buffer);
+extern "C" IOMobileFramebufferReturn IOMobileFramebufferCopyLayerDisplayedSurface(IOMobileFramebufferRef pointer, int surface, IOSurfaceRef *buffer);
 extern "C" IOMobileFramebufferReturn IOMobileFramebufferOpen(IOMobileFramebufferService service, mach_port_t owningTask, unsigned int type, IOMobileFramebufferRef *pointer);
 extern "C" IOMobileFramebufferReturn IOMobileFramebufferGetMainDisplay(IOMobileFramebufferRef *pointer);
+extern "C" mach_port_t mach_task_self(void);
 static IOSurfaceAcceleratorRef accelerator;
 static IOSurfaceRef static_buffer;
 
@@ -101,7 +105,10 @@ static void VNCSetup()
 		IOSurfaceAcceleratorCreate(kCFAllocatorDefault, 0, &accelerator);
 		
 		IOMobileFramebufferGetMainDisplay(&framebufferConnection);
+
 		IOMobileFramebufferGetLayerDefaultSurface(framebufferConnection, 0, &screenSurface);
+        if(screenSurface == NULL)
+            IOMobileFramebufferCopyLayerDisplayedSurface(framebufferConnection, 0, &screenSurface);
 		
 		//CGSize size;
 		//IOMobileFramebufferGetDisplaySize(framebufferConnection, &size);
@@ -528,3 +535,17 @@ static void handleVNCKeyboard(rfbBool down, rfbKeySym key, rfbClientPtr client) 
 static void handleVNCPointer(int buttons, int x, int y, rfbClientPtr client) {
     VNCPointer(buttons, x, y, client);
 }
+
+// 기본	22:11:52.331940+0900	kernel	Corpse released, count at 0
+// 기본	22:11:52.414493+0900	kernel	IOMFB: default_fb_surface: No Default FB Surface found. Return error
+// 기본	22:11:52.414536+0900	kernel	screendumpd[43722] Corpse allowed 1 of 5
+// 기본	22:11:52.606790+0900	kernel	Corpse released, count at 0
+// 기본	22:11:52.682856+0900	kernel	IOMFB: default_fb_surface: No Default FB Surface found. Return error
+// 기본	22:11:52.682905+0900	kernel	screendumpd[43723] Corpse allowed 1 of 5
+// 기본	22:11:52.876255+0900	kernel	Corpse released, count at 0
+// 기본	22:11:52.915524+0900	kernel	IOMFB: default_fb_surface: No Default FB Surface found. Return error
+// 기본	22:11:52.915570+0900	kernel	screendumpd[43724] Corpse allowed 1 of 5
+// 기본	22:11:53.105917+0900	kernel	Corpse released, count at 0
+// 기본	22:11:53.277579+0900	kernel	IOMFB: default_fb_surface: No Default FB Surface found. Return error
+// 기본	22:11:53.277657+0900	kernel	screendumpd[43725] Corpse allowed 1 of 5
+// 기본	22:11:53.407555+0900	kernel	IOMFB: default_fb_surface: No Default FB Surface found. Return error

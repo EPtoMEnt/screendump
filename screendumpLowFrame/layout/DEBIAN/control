@@ -1,9 +1,9 @@
-Package: com.cosmosgenius.screendump13
+Package: com.m1337.screendump15
 Name: screendump
-Depends: preferenceloader
+Depends: mobilesubstrate, preferenceloader
 Architecture: iphoneos-arm
 Description: VNC for ios
-Maintainer: Sharat M R <cosmosgenius@gmail.com>
-Author: Sharat M R <cosmosgenius@gmail.com>
+Maintainer: m1337 <morpheus@1337.pro>
+Author: m1337 <morpheus@1337.pro>
 Section: Tweaks
-Version: 0.0.4
+Version: 0.0.5

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ -L "/var/jb" ]; then
     launchctl unload /var/jb/Library/LaunchDaemons/com.julioverne.screendumpd.plist
