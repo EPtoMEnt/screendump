@@ -1,6 +1,9 @@
 #include <errno.h>
 #include <substrate.h>
 #include <rfb/rfb.h>
+#import <Foundation/Foundation.h>
+#import <IOSurface/IOSurfaceRef.h>
+#import <rootless.h>
 
 #define kSettingsPath @"/var/mobile/Library/Preferences/com.cosmosgenius.screendump.plist"
 
