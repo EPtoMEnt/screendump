@@ -40,6 +40,15 @@ jobs:
           fi
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
 
+      - name: Create Tag
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ env.TAG_NAME }} || echo "Tag already exists."
+          git push origin ${{ env.TAG_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build Release package - Rootful
         run: |
           cd screendumpLowFrame
@@ -56,5 +65,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: screendumpLowFrame/packages/*.deb
+          tag_name: ${{ env.TAG_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
