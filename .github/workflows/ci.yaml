@@ -49,12 +49,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Release package - Rootful
-        run: |
-          cd screendumpLowFrame
-          make clean
-          make package FINALPACKAGE=1 PACKAGE_VERSION=${{ env.TAG_NAME }}-rootful
-
       - name: Build Release package - Rootless
         run: |
           cd screendumpLowFrame
