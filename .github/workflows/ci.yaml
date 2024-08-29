@@ -26,35 +26,35 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
-      - name: Theos Setup (Setup)
+      - name: Theos Setup
         uses: NyaMisty/theos-action@master
 
-      - name: Get tag
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
-        id: tag
-        uses: dawidd6/action-get-tag@v1
+      - name: Determine Tag or Default
+        id: determine_tag
+        run: |
+          # Check if the current ref is a tag
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          else
+            TAG_NAME="0.0.5" # Fallback tag version
+          fi
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
 
       - name: Build Release package - Rootful
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
         run: |
           cd screendumpLowFrame
           make clean
-          TAGNAME=${{ steps.tag.outputs.tag || '0.0.5' }}  # Default value for manual run
-          make package FINALPACKAGE=1 PACKAGE_VERSION=${TAGNAME#v}-rootful
+          make package FINALPACKAGE=1 PACKAGE_VERSION=${{ env.TAG_NAME }}-rootful
 
       - name: Build Release package - Rootless
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
         run: |
           cd screendumpLowFrame
           make clean
-          TAGNAME=${{ steps.tag.outputs.tag || '0.0.5' }}  # Default value for manual run
-          make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1 PACKAGE_VERSION=${TAGNAME#v}-rootless
+          make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1 PACKAGE_VERSION=${{ env.TAG_NAME }}-rootless
 
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
         with:
-          files: |
-            ${{ github.workspace }}/screendumpLowFrame/packages/*.deb
+          files: screendumpLowFrame/packages/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
