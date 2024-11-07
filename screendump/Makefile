@@ -1,10 +1,8 @@
-DEBUG=0
-FINALPACKAGE=1
-
-THEOS_PACKAGE_SCHEME = rootless
-
-TARGET = iphone:14.5:14.5
-ARCHS = arm64
+export THEOS_PACKAGE_SCHEME = rootless
+export ARCHS = arm64 arm64e
+export TARGET = iphone:16.5:14.0
+export GO_EASY_ON_ME = 1
+export COPYFILE_DISABLE=1
 
 include $(THEOS)/makefiles/common.mk
 

@@ -1,8 +1,10 @@
-#include <errno.h>
-#include <substrate.h>
-#include <rfb/rfb.h>
-#include <UIKit/UIKit.h>
-#include <Foundation/Foundation.h>
+#import <errno.h>
+#import <substrate.h>
+#import <rfb/rfb.h>
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
+#import "FrameUpdater.h"
 
 #define kSettingsPath @"/var/mobile/Library/Preferences/com.cosmosgenius.screendump.plist"
 
@@ -63,7 +65,7 @@ extern "C" IOMobileFramebufferReturn IOMobileFramebufferGetLayerDefaultSurface(I
 extern "C" IOMobileFramebufferReturn IOMobileFramebufferCopyLayerDisplayedSurface(IOMobileFramebufferRef pointer, int surface, IOSurfaceRef *buffer);
 extern "C" IOMobileFramebufferReturn IOMobileFramebufferOpen(IOMobileFramebufferService service, mach_port_t owningTask, unsigned int type, IOMobileFramebufferRef *pointer);
 extern "C" IOMobileFramebufferReturn IOMobileFramebufferGetMainDisplay(IOMobileFramebufferRef *pointer);
-extern "C" mach_port_t mach_task_self(void);
+extern "C" mach_port_t mach_task_self();
 static IOSurfaceAcceleratorRef accelerator;
 static IOSurfaceRef static_buffer;
 
@@ -71,8 +73,6 @@ static void VNCSettings(bool shouldStart, NSString *password);
 static void VNCUpdateRunState(bool shouldStart);
 static void handleVNCKeyboard(rfbBool down, rfbKeySym key, rfbClientPtr client);
 static void handleVNCPointer(int buttons, int x, int y, rfbClientPtr client);
-
-static BOOL isLoopFrame;
 
 static rfbBool VNCCheck(rfbClientPtr client, const char *data, int size)
 {
@@ -93,12 +93,6 @@ static rfbBool VNCCheck(rfbClientPtr client, const char *data, int size)
 static IOSurfaceRef screenSurface = NULL;
 static IOMobileFramebufferRef framebufferConnection = NULL;
 
-@interface FrameUpdater : NSObject
-@property (nonatomic, retain) NSTimer* myTimer;
-- (void)startFrameLoop;
-- (void)stopFrameLoop;
-@end
-
 static void VNCSetup()
 {
 	if(!screenSurface) {
@@ -115,8 +109,8 @@ static void VNCSetup()
 		//width = size.width/2;
 		//height = size.height/2;
 		
-		width = prefferW==0?IOSurfaceGetWidth(screenSurface):prefferW;
-		height = prefferW==0?IOSurfaceGetHeight(screenSurface):prefferH;
+		width = prefferW == 0 ? IOSurfaceGetWidth(screenSurface) : prefferW;
+		height = prefferW == 0 ? IOSurfaceGetHeight(screenSurface) : prefferH;
 		
 		size_image = IOSurfaceGetAllocSize(screenSurface);
 		bytesPerRow = IOSurfaceGetBytesPerRow(screenSurface);
@@ -161,6 +155,7 @@ static void VNCSettings(bool shouldStart, NSString* password)
         CCSPassword = password;
     }
     NSString *sEnabled = CCSisEnabled ? @"YES": @"NO";
+    [[FrameUpdater shared] setIsEnabled:CCSisEnabled];
     VNCUpdateRunState(CCSisEnabled);
 }
 
@@ -172,28 +167,20 @@ static void VNCUpdateRunState(bool shouldStart)
         return;
     }
 	
-	
-    if(CCSPassword && CCSPassword.length) {
+    if (CCSPassword && CCSPassword.length) {
         screen->authPasswdData = (void *) CCSPassword;
     } else {
         screen->authPasswdData = NULL;
     }
-    if(shouldStart == isVNCRunning) {
+    if (shouldStart == isVNCRunning) {
         return;
     }
-    if(shouldStart) {
+    if (shouldStart) {
         rfbInitServer(screen);
         rfbRunEventLoop(screen, -1, true);
-		
-		isLoopFrame = YES;
-		
 		[[FrameUpdater shared] startFrameLoop];
-		
-    } else {
-		isLoopFrame = NO;
-		
+    } else {		
 		[[FrameUpdater shared] stopFrameLoop];
-		
         rfbShutdownServer(screen, true);
     }
     isVNCRunning = shouldStart;
@@ -222,36 +209,43 @@ static void loadPrefs(void)
 
 static uint32_t oldSeed;
 
-@implementation FrameUpdater
-{
-	NSOperationQueue *q;
+@implementation FrameUpdater {
+	NSOperationQueue *_q;
+	BOOL _isLoopFrame;
 }
 @synthesize myTimer;
-+ (id)shared
+@synthesize isEnabled;
+
++(id)shared
 {
-	static __strong FrameUpdater* initFrame;
-	if(!initFrame) {
-		initFrame = [[[self class] alloc] init];
-	}
-	return initFrame;
+	static dispatch_once_t onceToken = 0;
+	__strong static FrameUpdater* sharedInstance = nil;
+	dispatch_once(&onceToken, ^{
+		sharedInstance = [[self alloc] init];
+	});
+	return sharedInstance;
 }
-- (id)init
+
+-(id)init
 {
-	self = [super init];
-	
-	q = [[NSOperationQueue alloc] init];
-	
+	if ((self = [super init]))
+	{
+		_q = [[NSOperationQueue alloc] init];
+		_isLoopFrame = NO;
+		isEnabled = NO;
+	}
 	return self;
 }
-- (void)_upFrameLoop
+
+-(void)_upFrameLoop
 {
-	if(isLoopFrame && CCSisEnabled) {
+	if (_isLoopFrame && isEnabled) {
 		//check if screen changed
 		uint32_t newSeed = IOSurfaceGetSeed(screenSurface);
 		
 		if(oldSeed != newSeed && rfbIsActive(screen)) {
 			oldSeed = newSeed;
-			[q addOperationWithBlock: ^{
+			[_q addOperationWithBlock: ^{
 				IOSurfaceAcceleratorTransferSurface(accelerator, screenSurface, static_buffer, NULL, NULL, NULL, NULL);
 				rfbMarkRectAsModified(screen, 0, 0, width, height);
 			}];
@@ -260,29 +254,35 @@ static uint32_t oldSeed;
 		[self stopFrameLoop];
 	}
 }
-- (void)stopFrameLoop
+
+-(void)stopFrameLoop
 {
 	if(myTimer && [myTimer isValid]) {
 		dispatch_async(dispatch_get_main_queue(), ^(void){
 			[myTimer invalidate];
+			_isLoopFrame = NO;
 		});
 	}
 }
-- (void)startFrameLoop
+
+-(void)startFrameLoop
 {
 	if(size_image == 0) {
 		VNCSetup();
 	}
 	[self stopFrameLoop];
+	_isLoopFrame = YES;
 	dispatch_async(dispatch_get_main_queue(), ^(void){
 		myTimer = [NSTimer scheduledTimerWithTimeInterval:1/400 target:self selector:@selector(_upFrameLoop) userInfo:nil repeats:YES];
 	});
 }
+
 -(void)dealloc
 {
     [self stopFrameLoop];
 }
 @end
+
 
 static void restartServer()
 {
@@ -307,12 +307,12 @@ int main(int argc, const char *argv[])
 }
 
 
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-#include <rfb/rfb.h>
-#include <rfb/keysym.h>
-#include "./include/IOKit/hid/IOHIDEventTypes.h"
-#include "./include/IOKit/hidsystem/IOHIDUsageTables.h"
+#import <mach/mach.h>
+#import <mach/mach_time.h>
+#import <rfb/rfb.h>
+#import <rfb/keysym.h>
+#import "./include/IOKit/hid/IOHIDEventTypes.h"
+#import "./include/IOKit/hidsystem/IOHIDUsageTables.h"
 
 typedef uint32_t IOHIDDigitizerTransducerType;
 
