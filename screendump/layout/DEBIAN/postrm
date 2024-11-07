@@ -1,5 +1,2 @@
 #!/bin/sh
-
-launchctl unload /var/jb/Library/LaunchDaemons/com.julioverne.screendumpd.plist
-
 exit 0;

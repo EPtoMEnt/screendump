@@ -11,4 +11,4 @@ SUBPROJECTS += Capturer Server
 include $(THEOS_MAKE_PATH)/aggregate.mk
 
 after-screendumpd-stage::
-	$(ECHO_NOTHING)$(FAKEROOT) chown root:wheel $(THEOS_STAGING_DIR)/Library/LaunchDaemons/com.julioverne.screendumpd.plist$(ECHO_END)
+	$(ECHO_NOTHING)$(FAKEROOT) chown root:wheel $(THEOS_STAGING_DIR)/Library/LaunchDaemons/ru.mostmodest.screendumpd.plist$(ECHO_END)

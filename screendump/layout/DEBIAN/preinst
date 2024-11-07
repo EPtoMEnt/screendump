@@ -1,0 +1,3 @@
+#!/bin/sh
+launchctl unload /var/jb/Library/LaunchDaemons/ru.mostmodest.screendumpd.plist 2> /dev/null
+exit 0;

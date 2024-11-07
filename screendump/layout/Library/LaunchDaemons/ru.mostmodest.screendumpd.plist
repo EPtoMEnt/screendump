@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.julioverne.screendumpd</string>
+	<string>ru.mostmodest.screendumpd</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/var/jb/usr/libexec/screendumpd</string>
+		<string>/usr/libexec/screendumpd</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>

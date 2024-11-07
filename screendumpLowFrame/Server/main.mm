@@ -5,7 +5,7 @@
 #import <IOSurface/IOSurfaceRef.h>
 #import <rootless.h>
 
-#define kSettingsPath @"/var/mobile/Library/Preferences/com.cosmosgenius.screendump.plist"
+#define kSettingsPath @"/var/mobile/Library/Preferences/ru.mostmodest.screendump.plist"
 
 static bool CCSisEnabled = true;
 static NSString *CCSPassword = nil;
@@ -161,7 +161,7 @@ static void loadPrefs(void)
 	NSLog(@"screendumpd: load prefs");
 	@autoreleasepool {
 		NSDictionary* defaults = nil;
-		CFStringRef appID = CFSTR("com.cosmosgenius.screendump");
+		CFStringRef appID = CFSTR("ru.mostmodest.screendump");
 		CFArrayRef keyList = CFPreferencesCopyKeyList(appID, CFSTR("mobile"), kCFPreferencesAnyHost);
 		if(keyList) {
 			defaults = (NSDictionary *)CFPreferencesCopyMultiple(keyList, appID, CFSTR("mobile"), kCFPreferencesAnyHost)?:@{};
@@ -217,13 +217,13 @@ int main(int argc, const char *argv[])
     CFNotificationCenterAddObserver(
         CFNotificationCenterGetDarwinNotifyCenter(),
         NULL, (CFNotificationCallback)loadPrefs,
-        CFSTR("com.cosmosgenius.screendump/preferences.changed"),
+        CFSTR("ru.mostmodest.screendump/preferences.changed"),
         NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 		
 	CFNotificationCenterAddObserver(
         CFNotificationCenterGetDarwinNotifyCenter(),
         NULL, (CFNotificationCallback)upFrame,
-        CFSTR("com.julioverne.screendump/frameChanged"),
+        CFSTR("ru.mostmodest.screendump/frameChanged"),
         NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 			
 	NSLog(@"screendumpd: main - vnc setup");

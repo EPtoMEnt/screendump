@@ -4,7 +4,7 @@
 #import <UIKit/UIKit.h>
 #import <rootless.h>
 
-#define kSettingsPath @"/var/mobile/Library/Preferences/com.cosmosgenius.screendump.plist"
+#define kSettingsPath @"/var/mobile/Library/Preferences/ru.mostmodest.screendump.plist"
 
 extern "C" UIImage* _UICreateScreenUIImage();
 
@@ -126,7 +126,7 @@ static BOOL isBlackScreen;
 				[imageData writeToFile:@"//tmp/screendump_Buff.tmp" atomically:YES];
 				[@{@"width":@(iWidth), @"height":@(iHeight), @"size":@(size),} writeToFile:@"//tmp/screendump_Info.tmp" atomically:YES];
 				NSLog(@"screendumpbb: capture - notifying daemon");
-				notify_post("com.julioverne.screendump/frameChanged");
+				notify_post("ru.mostmodest.screendump/frameChanged");
 			}
 		});
 	}
@@ -164,7 +164,7 @@ static void loadPrefs(CFNotificationCenterRef center, void* observer, CFStringRe
 {
 	NSLog(@"screendumpbb: loadPrefs");
 	@autoreleasepool {
-		NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.cosmosgenius.screendump"];
+		NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"ru.mostmodest.screendump"];
 		isEnabled = [[defaults objectForKey:@"CCSisEnabled"]?:@NO boolValue];
 		NSLog(@"screendumpbb: loadPrefs - isEnabled: %d", isEnabled);
 	}
@@ -177,7 +177,7 @@ static void loadPrefs(CFNotificationCenterRef center, void* observer, CFStringRe
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, screenDisplayStatus, CFSTR("com.apple.iokit.hid.displayStatus"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 	NSLog(@"screendumpbb: ctor 1");
 	
-	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, loadPrefs, CFSTR("com.cosmosgenius.screendump/preferences.changed"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, loadPrefs, CFSTR("ru.mostmodest.screendump/preferences.changed"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 	NSLog(@"screendumpbb: ctor 2");
 	
 	loadPrefs(NULL, NULL, NULL, NULL, NULL);

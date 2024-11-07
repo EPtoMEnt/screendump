@@ -1,11 +1,11 @@
-Package: ru.mostmodest.screendump.lowframe
-Name: screendumpLowFrame
+Package: ru.mostmodest.screendump
+Name: screendump
 Architecture: iphoneos-arm
 Description: VNC for iOS15+ (rootless/Ellekit)
 Maintainer: mostm
-Author: julioverne
+Author: cosmosgenius
 Section: Tweaks
-Conflicts: ru.mostmodest.screendump
+Conflicts: ru.mostmodest.screendump.lowframe
 Depends: mobilesubstrate, preferenceloader
 Icon: file:///Library/PreferenceLoader/Preferences/screendump/ScreenDump@2x.png
 Version: 0.0.5

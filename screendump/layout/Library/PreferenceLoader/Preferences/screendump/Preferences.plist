@@ -21,13 +21,13 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.cosmosgenius.screendump/restart</string>
+			<string>ru.mostmodest.screendump/restart</string>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.cosmosgenius.screendump</string>
+			<string>ru.mostmodest.screendump</string>
 			<key>key</key>
 			<string>CCSisEnabled</string>
 			<key>label</key>
@@ -35,11 +35,11 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.cosmosgenius.screendump/restart</string>
+			<string>ru.mostmodest.screendump/restart</string>
 			<key>cell</key>
 			<string>PSSecureEditTextCell</string>
 			<key>defaults</key>
-			<string>com.cosmosgenius.screendump</string>
+			<string>ru.mostmodest.screendump</string>
 			<key>key</key>
 			<string>CCSPassword</string>
 			<key>label</key>
@@ -55,11 +55,11 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.cosmosgenius.screendump/restart</string>
+			<string>ru.mostmodest.screendump/restart</string>
 			<key>cell</key>
 			<string>PSEditTextCell</string>
 			<key>defaults</key>
-			<string>com.cosmosgenius.screendump</string>
+			<string>ru.mostmodest.screendump</string>
 			<key>key</key>
 			<string>height</string>
 			<key>label</key>
@@ -69,11 +69,11 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.cosmosgenius.screendump/restart</string>
+			<string>ru.mostmodest.screendump/restart</string>
 			<key>cell</key>
 			<string>PSEditTextCell</string>
 			<key>defaults</key>
-			<string>com.cosmosgenius.screendump</string>
+			<string>ru.mostmodest.screendump</string>
 			<key>key</key>
 			<string>width</string>
 			<key>label</key>
