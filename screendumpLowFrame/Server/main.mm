@@ -1,6 +1,6 @@
-#include <errno.h>
-#include <substrate.h>
-#include <rfb/rfb.h>
+#import <errno.h>
+#import <substrate.h>
+#import <rfb/rfb.h>
 #import <Foundation/Foundation.h>
 #import <IOSurface/IOSurfaceRef.h>
 #import <rootless.h>
@@ -47,7 +47,7 @@ typedef mach_port_t io_service_t;
 typedef kern_return_t IOReturn;
 typedef IOReturn IOMobileFramebufferReturn;
 typedef io_service_t IOMobileFramebufferService;
-extern "C" mach_port_t mach_task_self(void);
+extern "C" mach_port_t mach_task_self();
 extern "C" void IOSurfaceFlushProcessorCaches(IOSurfaceRef buffer);
 extern "C" int IOSurfaceLock(IOSurfaceRef surface, uint32_t options, uint32_t *seed);
 extern "C" int IOSurfaceUnlock(IOSurfaceRef surface, uint32_t options, uint32_t *seed);
@@ -66,6 +66,7 @@ static void handleVNCPointer(int buttons, int x, int y, rfbClientPtr client);
 
 static rfbBool VNCCheck(rfbClientPtr client, const char *data, int size)
 {
+   	NSLog(@"screendumpd: VNCCheck");
     NSString *password = reinterpret_cast<NSString *>(screen->authPasswdData);
     if(!password) {
         return TRUE;
@@ -82,6 +83,7 @@ static rfbBool VNCCheck(rfbClientPtr client, const char *data, int size)
 
 static void VNCSetup()
 {
+   	NSLog(@"screendumpd: VNCSetup");
 	@autoreleasepool {
 		NSDictionary* frameInfo = [NSDictionary dictionaryWithContentsOfFile:@"//tmp/screendump_Info.tmp"]?:@{};
 		width = [frameInfo[@"width"]?:@(0) intValue];
@@ -116,33 +118,47 @@ static void VNCSettings(bool shouldStart, NSString* password)
         CCSPassword = password;
     }
     NSString *sEnabled = CCSisEnabled ? @"YES": @"NO";
+   	NSLog(@"screendumpd: VNCSettings - is enabled - %@", sEnabled);
+   	NSLog(@"screendumpd: VNCSettings - password - %@", CCSPassword);
     VNCUpdateRunState(CCSisEnabled);
 }
 
 static void VNCUpdateRunState(bool shouldStart)
 {
+   	NSLog(@"screendumpd: VNCUpdateRunState");
     if(screen == NULL) {
+       	NSLog(@"screendumpd: VNCUpdateRunState - screen is nil");
         return;
     }
     if(CCSPassword && CCSPassword.length) {
+       	NSLog(@"screendumpd: VNCUpdateRunState - configured password");
         screen->authPasswdData = (void *) CCSPassword;
     } else {
+       	NSLog(@"screendumpd: VNCUpdateRunState - set password to nil");
         screen->authPasswdData = NULL;
     }
+    NSLog(@"screendumpd: VNCUpdateRunState - vnc is running?");
     if(shouldStart == isVNCRunning) {
+       	NSLog(@"screendumpd: VNCUpdateRunState - vnc is running");
         return;
     }
+    NSLog(@"screendumpd: VNCUpdateRunState - vnc is not running");
     if(shouldStart) {
+       	NSLog(@"screendumpd: VNCUpdateRunState - rfbInitServer");
         rfbInitServer(screen);
+       	NSLog(@"screendumpd: VNCUpdateRunState - rfbRunEventLoop");
         rfbRunEventLoop(screen, -1, true);
     } else {
+       	NSLog(@"screendumpd: VNCUpdateRunState - rfbShutdownServer");
         rfbShutdownServer(screen, true);
     }
     isVNCRunning = shouldStart;
+    NSLog(@"screendumpd: VNCUpdateRunState - isVNCRunning: %d", isVNCRunning);
 }
 
 static void loadPrefs(void)
 {
+	NSLog(@"screendumpd: load prefs");
 	@autoreleasepool {
 		NSDictionary* defaults = nil;
 		CFStringRef appID = CFSTR("com.cosmosgenius.screendump");
@@ -152,7 +168,9 @@ static void loadPrefs(void)
 			CFRelease(keyList);
 		}
 		BOOL isEnabled = [[defaults objectForKey:@"CCSisEnabled"]?:@NO boolValue];
+    	NSLog(@"screendumpd: prefs - is enabled - %d", isEnabled);
 		NSString *password = [defaults objectForKey:@"CCSPassword"];
+    	NSLog(@"screendumpd: prefs - password - %@", password);
 		VNCSettings(isEnabled, password);
 	}
 }
@@ -164,22 +182,28 @@ static void VNCBlack()
 
 static void upFrame()
 {
+    NSLog(@"screendumpd: upFrame");
 	if(size_image == 0) {
+        NSLog(@"screendumpd: upFrame - size_image = 0");
 		VNCSetup();
 	}
 	
 	if(screen == NULL) {
+        NSLog(@"screendumpd: upFrame - screen is nil");
         return;
     }
 	
 	@try {
 		@autoreleasepool {
+            NSLog(@"screendumpd: upFrame - updating buffer...");
 			NSData *data = [[NSFileManager defaultManager] contentsAtPath:@"//tmp/screendump_Buff.tmp"];
 			memcpy(screen->frameBuffer, (void*)data.bytes, data.length);
+            NSLog(@"screendumpd: upFrame - updated buffer");
 		}
 	}@catch(NSException*e){
 	}
 	
+    NSLog(@"screendumpd: upFrame - requesting to send a new frame");
 	rfbMarkRectAsModified(screen, 0, 0, width, height);
 }
 
@@ -188,6 +212,8 @@ extern "C" IOMobileFramebufferReturn IOMobileFramebufferGetMainDisplay(IOMobileF
 int main(int argc, const char *argv[])
 {
 	
+    isVNCRunning = NO;
+    NSLog(@"screendumpd: main start");
     CFNotificationCenterAddObserver(
         CFNotificationCenterGetDarwinNotifyCenter(),
         NULL, (CFNotificationCallback)loadPrefs,
@@ -199,23 +225,27 @@ int main(int argc, const char *argv[])
         NULL, (CFNotificationCallback)upFrame,
         CFSTR("com.julioverne.screendump/frameChanged"),
         NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
-		
-    loadPrefs();
-	
+			
+	NSLog(@"screendumpd: main - vnc setup");
 	VNCSetup();
 	//VNCBlack();
 	
+	NSLog(@"screendumpd: main - load prefs");
+    loadPrefs();
+
+	NSLog(@"screendumpd: main - loop");
 	[[NSRunLoop currentRunLoop] run];
+	NSLog(@"screendumpd: main - end");
     return EXIT_SUCCESS;
 }
 
 
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-#include <rfb/rfb.h>
-#include <rfb/keysym.h>
-#include "./include/IOKit/hid/IOHIDEventTypes.h"
-#include "./include/IOKit/hidsystem/IOHIDUsageTables.h"
+#import <mach/mach.h>
+#import <mach/mach_time.h>
+#import <rfb/rfb.h>
+#import <rfb/keysym.h>
+#import "./include/IOKit/hid/IOHIDEventTypes.h"
+#import "./include/IOKit/hidsystem/IOHIDUsageTables.h"
 
 typedef uint32_t IOHIDDigitizerTransducerType;
 

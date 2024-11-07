@@ -1,11 +1,8 @@
-#include <errno.h>
-#include <substrate.h>
-#include <rfb/rfb.h>
+#import <errno.h>
+#import <substrate.h>
 #import <notify.h>
 #import <UIKit/UIKit.h>
 #import <rootless.h>
-
-#undef NSLog
 
 #define kSettingsPath @"/var/mobile/Library/Preferences/com.cosmosgenius.screendump.plist"
 
@@ -19,13 +16,32 @@ static BOOL isBlackScreen;
 @end
 
 @implementation CapturerScreen
-- (id)init
+
+-(id)init
 {
+	NSLog(@"screendump bb: CapturerScreen init");
 	self = [super init];
-	
+	// [self start];
 	return self;
 }
-- (unsigned char *)pixelBRGABytesFromImageRef:(CGImageRef)imageRef
+
++(void)load
+{
+	CapturerScreen* instance = [self sharedInstance];
+	[instance start];
+}
+
++(instancetype)sharedInstance
+{
+	static dispatch_once_t onceToken = 0;
+	__strong static CapturerScreen* sharedInstance = nil;
+	dispatch_once(&onceToken, ^{
+		sharedInstance = [[self alloc] init];
+	});
+	return sharedInstance;
+}
+
+-(unsigned char *)pixelBRGABytesFromImageRef:(CGImageRef)imageRef
 {
     
     NSUInteger iWidth = CGImageGetWidth(imageRef);
@@ -53,17 +69,18 @@ static BOOL isBlackScreen;
     
     return imageBytes;
 }
-- (unsigned char *)pixelBRGABytesFromImage:(UIImage *)image
+-(unsigned char *)pixelBRGABytesFromImage:(UIImage *)image
 {
     return [self pixelBRGABytesFromImageRef:image.CGImage];
 }
-- (void)start
+-(void)start
 {
 	dispatch_async(dispatch_get_main_queue(), ^(void){
+		NSLog(@"screendumpbb: setting capture timer every 0.4f");
 		[NSTimer scheduledTimerWithTimeInterval:0.4f target:self selector:@selector(capture) userInfo:nil repeats:YES];
 	});
 }
-- (UIImage *)imageWithImage:(UIImage *)image scaledToSize:(CGSize)newSize
+-(UIImage *)imageWithImage:(UIImage *)image scaledToSize:(CGSize)newSize
 {
     //UIGraphicsBeginImageContext(newSize);
     UIGraphicsBeginImageContextWithOptions(newSize, NO, 1.0f);
@@ -73,15 +90,19 @@ static BOOL isBlackScreen;
 	[image release];
     return newImage;
 }
-- (void)capture
+-(void)capture
 {
+	NSLog(@"screendumpbb: capture");
 	@autoreleasepool {
 		
+		NSLog(@"screendumpbb: capture - isBlackScreen: %d", isBlackScreen);
+		NSLog(@"screendumpbb: capture - isEnabled: %d", isEnabled);
 		if(isBlackScreen || !isEnabled) {
 			return;
 		}
 		
 		UIImage* image = _UICreateScreenUIImage();
+		NSLog(@"screendumpbb: capture - got frame, now resizing...");
 		
 		CGSize newS = CGSizeMake(image.size.width, image.size.height);
 		
@@ -96,19 +117,24 @@ static BOOL isBlackScreen;
 		size_t size = iWidth * iHeight * iBytesPerPixel;
 		
 		unsigned char * bytes = [self pixelBRGABytesFromImageRef:imageRef];
+		NSLog(@"screendumpbb: capture - resize complete, got bytes");
 		
 		dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 			@autoreleasepool {
+				NSLog(@"screendumpbb: capture - writing buffer...");
 				NSData *imageData = [NSData dataWithBytesNoCopy:bytes length:size freeWhenDone:YES];
 				[imageData writeToFile:@"//tmp/screendump_Buff.tmp" atomically:YES];
 				[@{@"width":@(iWidth), @"height":@(iHeight), @"size":@(size),} writeToFile:@"//tmp/screendump_Info.tmp" atomically:YES];
+				NSLog(@"screendumpbb: capture - notifying daemon");
 				notify_post("com.julioverne.screendump/frameChanged");
 			}
 		});
 	}
 }
+
 @end
 
+/*
 %hook SpringBoard
 - (void)applicationDidFinishLaunching:(id)application
 {
@@ -117,7 +143,7 @@ static BOOL isBlackScreen;
 	[cap start];
 }
 %end
-
+*/
 
 static void screenDisplayStatus(CFNotificationCenterRef center, void* observer, CFStringRef name, const void* object, CFDictionaryRef userInfo)
 {
@@ -131,21 +157,29 @@ static void screenDisplayStatus(CFNotificationCenterRef center, void* observer, 
     } else {
 		isBlackScreen = NO;
 	}
+	NSLog(@"screendumpbb: screenDisplayStatus - isBlackScreen: %d", isBlackScreen);
 }
 
 static void loadPrefs(CFNotificationCenterRef center, void* observer, CFStringRef name, const void* object, CFDictionaryRef userInfo)
 {
+	NSLog(@"screendumpbb: loadPrefs");
 	@autoreleasepool {
 		NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.cosmosgenius.screendump"];
 		isEnabled = [[defaults objectForKey:@"CCSisEnabled"]?:@NO boolValue];
+		NSLog(@"screendumpbb: loadPrefs - isEnabled: %d", isEnabled);
 	}
 }
 
 %ctor
 {
+	NSLog(@"screendumpbb: ctor");
+	isEnabled = NO;
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, screenDisplayStatus, CFSTR("com.apple.iokit.hid.displayStatus"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
+	NSLog(@"screendumpbb: ctor 1");
 	
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, loadPrefs, CFSTR("com.cosmosgenius.screendump/preferences.changed"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
+	NSLog(@"screendumpbb: ctor 2");
 	
 	loadPrefs(NULL, NULL, NULL, NULL, NULL);
+	NSLog(@"screendumpbb: ctor 3");
 }

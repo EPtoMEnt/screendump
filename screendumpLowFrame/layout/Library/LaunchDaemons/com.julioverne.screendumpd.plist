@@ -6,7 +6,7 @@
 	<string>com.julioverne.screendumpd</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/libexec/screendumpd</string>
+		<string>/var/jb/usr/libexec/screendumpd</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>

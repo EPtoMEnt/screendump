@@ -1,10 +1,8 @@
 #!/bin/sh
 
 if [ -L "/var/jb" ]; then
-    launchctl unload /var/jb/Library/LaunchDaemons/com.julioverne.screendumpd.plist
     launchctl load /var/jb/Library/LaunchDaemons/com.julioverne.screendumpd.plist
 else
-    launchctl unload /Library/LaunchDaemons/com.julioverne.screendumpd.plist
     launchctl load /Library/LaunchDaemons/com.julioverne.screendumpd.plist
 fi
 
