@@ -423,12 +423,12 @@ static void VNCKeyboard(rfbBool down, rfbKeySym key, rfbClientPtr client)
 
         case XK_Shift_L: usage = kHIDUsage_KeyboardLeftShift; break;
         case XK_Shift_R: usage = kHIDUsage_KeyboardRightShift; break;
-        case XK_Control_L: usage = kHIDUsage_KeyboardLeftControl; break;
-        case XK_Control_R: usage = kHIDUsage_KeyboardRightControl; break;
-        case XK_Meta_L: usage = kHIDUsage_KeyboardLeftAlt; break;
-        case XK_Meta_R: usage = kHIDUsage_KeyboardRightAlt; break;
-        case XK_Alt_L: usage = kHIDUsage_KeyboardLeftGUI; break;
-        case XK_Alt_R: usage = kHIDUsage_KeyboardRightGUI; break;
+        case XK_Control_L: usage = kHIDUsage_KeyboardLeftGUI; break;
+        case XK_Control_R: usage = kHIDUsage_KeyboardRightGUI; break;
+        case XK_Meta_L: usage = kHIDUsage_KeyboardLeftControl; break;
+        case XK_Meta_R: usage = kHIDUsage_KeyboardRightControl; break;
+        case XK_Alt_L: usage = kHIDUsage_KeyboardLeftAlt; break;
+        case XK_Alt_R: usage = kHIDUsage_KeyboardRightAlt; break;
 
         case XK_Up: usage = kHIDUsage_KeyboardUpArrow; break;
         case XK_Down: usage = kHIDUsage_KeyboardDownArrow; break;
