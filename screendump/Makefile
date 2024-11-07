@@ -7,7 +7,7 @@ export COPYFILE_DISABLE=1
 include $(THEOS)/makefiles/common.mk
 
 TOOL_NAME = screendumpd
-$(TOOL_NAME)_FILES = main.mm
+$(TOOL_NAME)_FILES = $(wildcard *.m)
 $(TOOL_NAME)_FRAMEWORKS := IOSurface IOKit
 $(TOOL_NAME)_PRIVATE_FRAMEWORKS := IOMobileFramebuffer IOSurface
 $(TOOL_NAME)_OBJCFLAGS += -I./vncbuild/include -Iinclude

@@ -12,5 +12,15 @@
 	<true/>
 	<key>KeepAlive</key>
 	<true/>
+    <key>SoftResourceLimits</key>
+    <dict>
+        <key>Core</key>
+        <integer>9223372036854775807</integer>
+    </dict>
+    <key>HardResourceLimits</key>
+    <dict>
+        <key>Core</key>
+		<integer>9223372036854775807</integer>
+	</dict>
 </dict>
 </plist>

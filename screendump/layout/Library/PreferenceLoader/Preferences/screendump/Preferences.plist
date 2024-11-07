@@ -29,7 +29,7 @@
 			<key>defaults</key>
 			<string>ru.mostmodest.screendump</string>
 			<key>key</key>
-			<string>CCSisEnabled</string>
+			<string>enabled</string>
 			<key>label</key>
 			<string>Enabled</string>
 		</dict>
@@ -41,7 +41,7 @@
 			<key>defaults</key>
 			<string>ru.mostmodest.screendump</string>
 			<key>key</key>
-			<string>CCSPassword</string>
+			<string>password</string>
 			<key>label</key>
 			<string>Password</string>
 		</dict>
