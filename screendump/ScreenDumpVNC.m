@@ -114,7 +114,7 @@
 
 		_staticBuffer = IOSurfaceCreate((CFDictionaryRef) [NSDictionary dictionaryWithObjectsAndKeys:
             @"PurpleEDRAM", kIOSurfaceMemoryRegion,
-            [NSNumber numberWithBool:YES], kIOSurfaceIsGlobal,
+            // [NSNumber numberWithBool:YES], kIOSurfaceIsGlobal,
             [NSNumber numberWithInt:bytesPerPixel*_width], kIOSurfaceBytesPerRow,
 			[NSNumber numberWithInt:bytesPerPixel], kIOSurfaceBytesPerElement,
             [NSNumber numberWithInt:_width], kIOSurfaceWidth,

@@ -67,8 +67,7 @@
 	[self stopFrameLoop];
 	_updatingFrames = YES;
 	dispatch_async(dispatch_get_main_queue(), ^(void){
-		// TODO: can we make VSync happen here?
-		_updateFrameTimer = [NSTimer scheduledTimerWithTimeInterval:1/500 target:self selector:@selector(_updateFrame) userInfo:nil repeats:YES];
+		_updateFrameTimer = [NSTimer scheduledTimerWithTimeInterval:1/400 target:self selector:@selector(_updateFrame) userInfo:nil repeats:YES];
 	});
 }
 
