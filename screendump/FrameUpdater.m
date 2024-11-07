@@ -1,4 +1,6 @@
 #import "FrameUpdater.h"
+#import <CoreGraphics/CoreGraphics.h>
+#import <QuartzCore/QuartzCore.h>
 
 @implementation FrameUpdater {
 	
@@ -7,6 +9,7 @@
 	BOOL _updatingFrames;
 	uint32_t _lastUpdatedSeed;
 	NSTimer* _updateFrameTimer;
+	CADisplayLink *_displayLink;
 
 	// Shared from ScreenDumpVNC
 	IOSurfaceRef _screenSurface;
@@ -36,39 +39,47 @@
 
 
 -(void)_updateFrame {
-	if (!_updatingFrames) {
-		[self stopFrameLoop];
-		return;
-	}
-
-	// check if screen changed
-	uint32_t currentFrameSeed = IOSurfaceGetSeed(_screenSurface);
-	
-	if (_lastUpdatedSeed != currentFrameSeed && rfbIsActive(_rfbScreenInfo)) {
-		_lastUpdatedSeed = currentFrameSeed;
-		[_q addOperationWithBlock: ^{
-			IOSurfaceAcceleratorTransferSurface(_accelerator, _screenSurface, _staticBuffer, NULL, NULL, NULL, NULL);
-			rfbMarkRectAsModified(_rfbScreenInfo, 0, 0, _width, _height);
-		}];
-	}
-}
-
--(void)stopFrameLoop {
-	if (_updateFrameTimer == nil || ![_updateFrameTimer isValid]) return;
-
-	dispatch_async(dispatch_get_main_queue(), ^(void){
-		[_updateFrameTimer invalidate];
-		_updatingFrames = NO;
-	});
+	[_q addOperationWithBlock: ^{
+		if (!_updatingFrames) {
+			[self stopFrameLoop];
+			return;
+		}
+		// Check if screen changed
+		uint32_t currentFrameSeed = IOSurfaceGetSeed(_screenSurface);
+		
+		// Only proceed if the screen has changed and the VNC is active
+		if (_lastUpdatedSeed != currentFrameSeed && rfbIsActive(_rfbScreenInfo)) {
+			_lastUpdatedSeed = currentFrameSeed;
+			
+			// Optimize the transfer by checking if the accelerator is available
+			if (_accelerator) {
+				IOSurfaceAcceleratorTransferSurface(_accelerator, _screenSurface, _staticBuffer, NULL, NULL, NULL, NULL);
+			}
+			
+			// Mark the entire screen as modified only if necessary
+			if (_width > 0 && _height > 0) {
+				rfbMarkRectAsModified(_rfbScreenInfo, 0, 0, _width, _height);
+			}
+		}
+	}];
 }
 
 -(void)startFrameLoop {
-	// if (size_image == 0) VNCSetup();
-	[self stopFrameLoop];
-	_updatingFrames = YES;
-	dispatch_async(dispatch_get_main_queue(), ^(void){
-		_updateFrameTimer = [NSTimer scheduledTimerWithTimeInterval:1/400 target:self selector:@selector(_updateFrame) userInfo:nil repeats:YES];
-	});
+    [self stopFrameLoop];
+    _updatingFrames = YES;
+    
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(_updateFrame)];
+        [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
+    });
+}
+
+-(void)stopFrameLoop {
+    if (_displayLink) {
+        [_displayLink invalidate];
+        _displayLink = nil;
+    }
+    _updatingFrames = NO;
 }
 
 -(void)dealloc {
