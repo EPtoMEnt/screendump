@@ -8,4 +8,4 @@ Section: Tweaks
 Conflicts: ru.mostmodest.screendump.lowframe
 Depends: mobilesubstrate, preferenceloader
 Icon: file:///Library/PreferenceLoader/Preferences/screendump/ScreenDump@2x.png
-Version: 0.1.0
+Version: 0.1.1
