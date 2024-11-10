@@ -15,9 +15,10 @@
 	IOSurfaceRef _staticBuffer;
 	size_t _width;
 	size_t _height;
+	BOOL _useCADisplayLink;
 }
 
--(instancetype)initWithSurfaceInfo:(IOSurfaceRef)screenSurface rfbScreenInfo:(rfbScreenInfoPtr)rfbScreenInfo accelerator:(IOSurfaceAcceleratorRef)accelerator staticBuffer:(IOSurfaceRef)staticBuffer width:(size_t)width height:(size_t)height {
+-(instancetype)initWithSurfaceInfo:(IOSurfaceRef)screenSurface rfbScreenInfo:(rfbScreenInfoPtr)rfbScreenInfo accelerator:(IOSurfaceAcceleratorRef)accelerator staticBuffer:(IOSurfaceRef)staticBuffer width:(size_t)width height:(size_t)height useCADisplayLink:(BOOL)useCADisplayLink {
 	if ((self = [super init])) {
 		_q = [[NSOperationQueue alloc] init];
 		_updatingFrames = NO;
@@ -30,6 +31,7 @@
 		_staticBuffer = staticBuffer;
 		_width = width;
 		_height = height;
+		_useCADisplayLink = useCADisplayLink;
 	}
 	return self;
 }
@@ -58,17 +60,25 @@
 
 	dispatch_async(dispatch_get_main_queue(), ^(void){
 		[_updateFrameTimer invalidate];
+		_updateFrameTimer = nil;
 		_updatingFrames = NO;
 	});
 }
 
 -(void)startFrameLoop {
-	// if (size_image == 0) VNCSetup();
 	[self stopFrameLoop];
 	_updatingFrames = YES;
-	dispatch_async(dispatch_get_main_queue(), ^(void){
-		_updateFrameTimer = [NSTimer scheduledTimerWithTimeInterval:1/400 target:self selector:@selector(_updateFrame) userInfo:nil repeats:YES];
-	});
+	
+	if (_useCADisplayLink) {
+		CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(_updateFrame)];
+		displayLink.preferredFramesPerSecond = 60; // Adjust as needed
+		[displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
+		_updateFrameTimer = (NSTimer *)displayLink;
+	} else {
+		dispatch_async(dispatch_get_main_queue(), ^(void){
+			_updateFrameTimer = [NSTimer scheduledTimerWithTimeInterval:1/400 target:self selector:@selector(_updateFrame) userInfo:nil repeats:YES];
+		});
+	}
 }
 
 -(void)dealloc {

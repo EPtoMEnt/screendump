@@ -142,7 +142,9 @@
 
     free(arg0);
 
-	_frameUpdater = [[FrameUpdater alloc] initWithSurfaceInfo:_screenSurface rfbScreenInfo:_rfbScreenInfo accelerator:_accelerator staticBuffer:_staticBuffer width:_width height:_height];
+    NSDictionary* defaults = getPrefsForAppId(@"ru.mostmodest.screendump");
+	bool useCADisplayLink = [[defaults objectForKey:@"displaysync"]?:@NO boolValue];
+	_frameUpdater = [[FrameUpdater alloc] initWithSurfaceInfo:_screenSurface rfbScreenInfo:_rfbScreenInfo accelerator:_accelerator staticBuffer:_staticBuffer width:_width height:_height useCADisplayLink:useCADisplayLink];
 }
 
 -(rfbBool)handleVNCAuthorization:(rfbClientPtr)client data:(const char *)data size:(int)size {

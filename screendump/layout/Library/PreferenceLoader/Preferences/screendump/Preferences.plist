@@ -81,6 +81,26 @@
 			<key>isNumeric</key>
 			<true/>
 		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Tuning</string>
+		</dict>
+		<dict>
+			<key>PostNotification</key>
+			<string>ru.mostmodest.screendump/restart</string>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>ru.mostmodest.screendump</string>
+			<key>key</key>
+			<string>displaysync</string>
+			<key>label</key>
+			<string>Update screen using CADisplayLink</string>
+		</dict>
 	</array>
 </dict>
 </plist>
